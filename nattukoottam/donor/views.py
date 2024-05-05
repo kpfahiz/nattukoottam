@@ -37,9 +37,22 @@ def user_login(request):
 
         if user:
             token, _ = Token.objects.get_or_create(user=user)
-            return Response({'token': token.key,'username':username}, status=status.HTTP_200_OK)
+            contex = {
+                "status": "success",
+                "errorInfo": None,
+                "result": {
+                "token":  token.key,
+                "username": username
+                }
+            }
 
-        return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response(contex, status=status.HTTP_200_OK)
+        contex = {
+            "status": "failure",
+            "errorInfo": "Invalid credentials",
+            "result": None
+            }
+        return Response(contex, status=status.HTTP_401_UNAUTHORIZED)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -48,9 +61,21 @@ def user_logout(request):
         try:
             # Delete the user's token to logout
             request.user.auth_token.delete()
-            return Response({'message': 'Successfully logged out.'}, status=status.HTTP_200_OK)
+            contex = {
+            "status": "failure",
+            "errorInfo": None,
+            "result": {
+                    'message': 'Successfully logged out.'
+                }
+            }
+            return Response(contex, status=status.HTTP_200_OK)
         except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            contex = {
+            "status": "failure",
+            "errorInfo": str(e),
+            "result": None
+            }
+            return Response(contex, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 def index(request):
      return HttpResponse("Http request is: "+request.method)  
