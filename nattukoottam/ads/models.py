@@ -1,3 +1,8 @@
 from django.db import models
 
-# Create your models here.
+
+class News(models.Model):
+    heading             = models.CharField(max_length=500)
+    title               = models.TextField()
+    date                = models.DateTimeField()
+    pic                 = models.ImageField(upload_to='News', default='ads.jpeg')
