@@ -16,7 +16,16 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from django.conf.urls.static import static
+from django.conf import settings
+
+from donor.views import index, user_login, register_user, user_logout
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-]
+    path('',index, name='home'),
+    path('register/', register_user, name='register'),
+    path('login/', user_login, name='login'),
+    path('logout/', user_logout, name='logout'),
+
+] + static(settings.MEDIA_URL, document_root= settings.MEDIA_ROOT)
