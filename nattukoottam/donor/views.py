@@ -16,8 +16,20 @@ def register_user(request):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            context = {
+                "status": "success",
+                "errorInfo": None,
+                "result": {
+                "data":  serializer.data
+                }
+            }
+            return Response(context, status=status.HTTP_201_CREATED)
+        context = {
+                "status": "failure",
+                "errorInfo": serializer.errors,
+                "result": None
+            }
+        return Response(context, status=status.HTTP_400_BAD_REQUEST)
     
 @api_view(['POST'])
 def user_login(request):
