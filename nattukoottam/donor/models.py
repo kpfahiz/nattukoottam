@@ -1,72 +1,62 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-
-
+from django.core.validators import RegexValidator
 
 class User(AbstractUser):
-    email               = models.EmailField(unique= True)
-    img_user            = models.ImageField(upload_to='profile_pic', default='3052.png_860.png')
+    email                   = models.EmailField()
+    phone_regex             = RegexValidator(regex=r'^\+?1?\d{9,10}$', message="Phone number must be entered in the format: '+999999999'. Up to 10 digits allowed.")
+    phone_number            = models.CharField(validators=[phone_regex], max_length=17, blank=True, unique=True) # Validators should be a list
     
     
 
-    def __str__(self):
+    def __str__(self)->str:
         return self.username
-
+    
 class Address(models.Model):
-    user                = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_address')
-    address_1           = models.CharField(max_length=100)
-    address_2           = models.CharField(max_length=100)
-    town                = models.CharField(max_length=100)
-    district            = models.CharField(max_length=100)
-    state               = models.CharField(max_length=100)
-    pincode             = models.CharField(max_length=50)
-
-    def __str__(self):
-        return self.user__username
-
-class Certificate(models.Model):
-    name                = models.CharField(max_length=30)
-    donor               = models.ForeignKey(User, on_delete=models.CASCADE, related_name='certificate_donor')
-    requestor           = models.ForeignKey('patient.reciever', on_delete=models.CASCADE, related_name='certificate_requestor')
-    date_issue          = models.DateTimeField()
-    is_reciever_approved= models.BooleanField(default= False)
-    is_admin_approved   = models.BooleanField(default= False)
-    img_certificate     = models.ImageField()
+    address                 = models.CharField(max_length=250)
+    place                   = models.CharField(max_length=100)
+    home_town               = models.CharField(max_length=100)
+    district                = models.CharField(max_length=100)
+    state                   = models.CharField(max_length=100)
+    pincode                 = models.CharField(max_length=6)
 
     def __str__(self) -> str:
-        return self.name
-
-class Blood_unit(models.Model):
-    requestor           = models.ForeignKey('patient.Reciever', on_delete=models.CASCADE, related_name='blood_unit_requestor')
-    donor               = models.ForeignKey(User, on_delete=models.CASCADE, related_name='blood_unit_donor')
-    date_creation       = models.DateTimeField()
-    is_recieved         = models.BooleanField(default= False)
-    is_approved         = models.BooleanField(default= False)
-
-    def __str__(self) -> str:
-        return self.requestor__user__username
+        return self.address
 
 class Point(models.Model):
-    type_choice         = (
-        ('WAPP','With App'),
-        ('WOAPP','Without App')
+    point_type_choice       = (
+        ('app','app'),
+        ('wapp','wapp')
     )
 
-    donor               = models.ForeignKey(User, on_delete=models.CASCADE, related_name='point_donor')
-    point               = models.IntegerField()
-    date_point          = models.DateTimeField()
-    type_of_point       = models.CharField(max_length=5,choices=type_choice)
+    point                   = models.IntegerField()
+    point_type              = models.CharField(max_length=4, choices=point_type_choice)
+    point_date              = models.DateTimeField()
 
     def __str__(self) -> str:
-        return self.donor__user__username + '\'s Point'
+        return self.point
+
+class Certificate(models.Model):
+    name                    = models.CharField(max_length=100)
+    is_reciever_approved    = models.BooleanField(default=False)
+    issue_date              = models.DateTimeField()  
+
+    def __str__(self) -> str:
+        return self.name     
+
+class BloodUnit(models.Model):
+    Donor                   = models.ForeignKey(User, on_delete=models.CASCADE )
+
+    def __str__(self) -> str:
+        return 'Blood Unit '+self.donor__user__username
 
 class Donor(models.Model):
-
-    status_choice   = (
-        ('A','Available'),
-        ('UA','Unavailable')
+    status_choice           = (
+        ('AV','AV'),
+        ('UAV','UAV')
     )
-    blood_gp_choice = (
+
+    blood_gp_choice         = (
         ('A+','A+'),
         ('A-','A-'),
         ('B+','B+'),
@@ -76,16 +66,16 @@ class Donor(models.Model):
         ('AB+','AB+'),
         ('AB-','AB-')
     )
-    user                = models.ForeignKey(User, on_delete=models.CASCADE, related_name='donor_user')
-    points              = models.ForeignKey(Point, on_delete=models.CASCADE, related_name='points')
-    certificate         = models.ForeignKey(Certificate, on_delete=models.CASCADE, related_name='donor_certificate')
-    place               = models.CharField(max_length=100)
-    status              = models.CharField(max_length=3, choices=status_choice)
-    blood_group         = models.CharField(max_length=3, choices=blood_gp_choice)
-    phone_number        = models.CharField(max_length=10)
-    weight              = models.CharField(max_length=3)
-    dob                 = models.DateField()
-    date_last_donation  = models.DateTimeField()
 
+
+    doner                   = models.ForeignKey(User, on_delete=models.CASCADE)
+    points                  = models.ForeignKey(Point, on_delete=models.CASCADE)
+    certificate             = models.ForeignKey(Certificate, on_delete=models.CASCADE)
+    wieght                  = models.FloatField()
+    dop                     = models.DateField()
+    status                  = models.CharField(max_length=3, choices=status_choice, default='AV')
+    blood_group             = models.CharField(max_length=3, choices=blood_gp_choice)
+    
     def __str__(self) -> str:
-        return self.user__username
+        return self.doner__user__username
+

@@ -7,13 +7,13 @@ from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 
-from .serializers import UserSerializer
+from .serializers import UserSignUpSerializer
 from .models import User
 
 @api_view(['POST'])
-def register_user(request):
+def user_signup(request):
     if request.method == 'POST':
-        serializer = UserSerializer(data=request.data)
+        serializer = UserSignUpSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             context = {
@@ -26,7 +26,7 @@ def register_user(request):
             return Response(context, status=status.HTTP_201_CREATED)
         context = {
                 "status": "failure",
-                "errorInfo": serializer.errors,
+                "errorInfo": "A user with same Mobile Number or Password already exist",
                 "result": None
             }
         return Response(context, status=status.HTTP_400_BAD_REQUEST)
@@ -34,18 +34,17 @@ def register_user(request):
 @api_view(['POST'])
 def user_login(request):
     if request.method == 'POST':
-        username = request.data.get('username')
+        phone_number = request.data.get('phone_number')
         password = request.data.get('password')
 
-        user = None
-        if '@' in username:
-            try:
-                user = User.objects.get(email=username)
-            except ObjectDoesNotExist:
-                pass
+        user = None   
+        try:
+            user = User.objects.get(phone_number=phone_number)
+        except ObjectDoesNotExist:
+            pass
 
         if not user:
-            user = authenticate(username=username, password=password)
+            user = authenticate(phone_name=phone_number, password=password)
 
         if user:
             token, _ = Token.objects.get_or_create(user=user)
@@ -54,7 +53,7 @@ def user_login(request):
                 "errorInfo": None,
                 "result": {
                 "token":  token.key,
-                "username": username
+                "username": phone_number
                 }
             }
 
@@ -65,6 +64,28 @@ def user_login(request):
             "result": None
             }
         return Response(contex, status=status.HTTP_401_UNAUTHORIZED)
+    
+
+@api_view(['POST'])
+def user_register(request):
+    if request.method == 'POST':
+        first_name = request.data.get('first_name')
+        last_name = request.data.get('last_name')
+        address_1 = request.data.get('address_1')
+        address_2 = request.data.get('address_2')
+        town = request.data.get('town')
+        district = request.data.get('district')
+        state = request.data.get('state')
+        pinecode = request.data.get('pincode')
+        if request.data.get('is_donor'):
+            place = request.data.get('place')
+            blood_group = request.data.get('blood_group')
+            phone_number = request.data.get('phone_number')
+            weight = request.data.get('weight')
+            dob = request.data.get('dob')
+            date_last_donation = request.get.data('date_last_donation')
+            
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])

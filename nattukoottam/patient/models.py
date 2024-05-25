@@ -2,6 +2,7 @@ from django.db import models
 
 class Reciever(models.Model):
     user                    = models.ForeignKey('donor.User', on_delete=models.CASCADE)
+    address                 = models.ForeignKey('donor.Address', on_delete=models.CASCADE)
 
     def __str__(self) -> str:
         return self.user__username
@@ -24,9 +25,8 @@ class Request(models.Model):
     date                    = models.DateTimeField()
     donors                  = models.ForeignKey("donor.donor", on_delete=models.CASCADE)
     is_closed               = models.BooleanField(default=False)
-    phone_number            = models.CharField(max_length=10)
     patient_address         = models.ForeignKey('donor.address', on_delete=models.CASCADE)
-    blood_unit              = models.ForeignKey('donor.blood_unit', on_delete=models.CASCADE)
+    blood_unit              = models.ForeignKey('donor.bloodunit', on_delete=models.CASCADE)
 
     def __str__(self) -> str:
         return self.request_raised_by__user__username
