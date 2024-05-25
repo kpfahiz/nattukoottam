@@ -26,7 +26,7 @@ def user_signup(request):
             return Response(context, status=status.HTTP_201_CREATED)
         context = {
                 "status": "failure",
-                "errorInfo": "A user with same Username or Password already exist",
+                "errorInfo": "A user with same Mobile Number or Password already exist",
                 "result": None
             }
         return Response(context, status=status.HTTP_400_BAD_REQUEST)
@@ -34,18 +34,17 @@ def user_signup(request):
 @api_view(['POST'])
 def user_login(request):
     if request.method == 'POST':
-        username = request.data.get('username')
+        phone_number = request.data.get('phone_number')
         password = request.data.get('password')
 
-        user = None
-        if '@' in username:
-            try:
-                user = User.objects.get(email=username)
-            except ObjectDoesNotExist:
-                pass
+        user = None   
+        try:
+            user = User.objects.get(phone_number=phone_number)
+        except ObjectDoesNotExist:
+            pass
 
         if not user:
-            user = authenticate(username=username, password=password)
+            user = authenticate(phone_name=phone_number, password=password)
 
         if user:
             token, _ = Token.objects.get_or_create(user=user)
@@ -54,7 +53,7 @@ def user_login(request):
                 "errorInfo": None,
                 "result": {
                 "token":  token.key,
-                "username": username
+                "username": phone_number
                 }
             }
 

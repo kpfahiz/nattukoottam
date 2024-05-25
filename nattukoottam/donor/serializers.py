@@ -5,13 +5,12 @@ from patient.models import Reciever
 class UserSignUpSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['username', 'phone_number', 'password']
+        fields = ['phone_number', 'password']
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
         user = User(
-            username= validated_data['username'],
-            phone_number = validated_date['phone_number']
+            phone_number = validated_data['phone_number']
         )
         user.set_password(validated_data['password'])
         user.save()
