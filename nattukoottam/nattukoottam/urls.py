@@ -19,12 +19,12 @@ from django.urls import path
 from django.conf.urls.static import static
 from django.conf import settings
 
-from donor.views import index, user_login, register_user, user_logout
+from donor.views import index, user_login, user_signup, user_logout
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('',index, name='home'),
-    path('register/', register_user, name='register'),
+    path('signup/', user_signup, name='register'),
     path('login/', user_login, name='login'),
     path('logout/', user_logout, name='logout'),
 
