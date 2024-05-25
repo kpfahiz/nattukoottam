@@ -30,7 +30,7 @@ class Point(models.Model):
     )
 
     point                   = models.IntegerField()
-    point_type              = models.CharField(max_length=3, choices=point_type_choice)
+    point_type              = models.CharField(max_length=4, choices=point_type_choice)
     point_date              = models.DateTimeField()
 
     def __str__(self) -> str:
@@ -43,6 +43,13 @@ class Certificate(models.Model):
 
     def __str__(self) -> str:
         return self.name     
+
+class BloodUnit(models.Model):
+    Donor                   = models.ForeignKey(User, on_delete=models.CASCADE )
+
+    def __str__(self) -> str:
+        return 'Blood Unit '+self.donor__user__username
+
 class Donor(models.Model):
     status_choice           = (
         ('AV','AV'),
