@@ -1,7 +1,8 @@
 from django.db import models
 
-class Reciever(models.Model):
+class Receiver(models.Model):
     user                    = models.ForeignKey('donor.User', on_delete=models.CASCADE)
+    is_receiver             = models.BooleanField(default=False)
 
     def __str__(self) -> str:
         return self.user__username
@@ -18,7 +19,7 @@ class Request(models.Model):
         ('AB-','AB-')
     )
 
-    request_raised_by       = models.ForeignKey(Reciever, on_delete= models.CASCADE, related_name='requestor')
+    request_raised_by       = models.ForeignKey(Receiver, on_delete= models.CASCADE, related_name='requestor')
     patient_name            = models.CharField(max_length=50)
     blood_group             = models.CharField(max_length=3, choices=blood_gp_choice)
     Hospital                = models.CharField(max_length=100)

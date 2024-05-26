@@ -6,9 +6,11 @@ from django.contrib.auth import authenticate
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
 
-from .serializers import UserSignUpSerializer, UserRegisterSerializer
-from .models import User
+from .serializers import UserSignUpSerializer, UserRegistrationSerializer
+from .models import User, Donor, Address
+from patient.models import Receiver
 
 @api_view(['POST'])
 def user_signup(request):
@@ -53,7 +55,7 @@ def user_login(request):
                 "errorInfo": None,
                 "result": {
                 "token":  token.key,
-                "username": phone_number
+                "phone_number": phone_number
                 }
             }
 
@@ -65,13 +67,43 @@ def user_login(request):
             }
         return Response(contex, status=status.HTTP_401_UNAUTHORIZED)
     
+  
+class UserUpdateAPIView(APIView):
+    def put(self, request):
+        phone_number = request.data.get('phone_number')
 
-@api_view(['POST'])
-def user_register(request):
-    if request.method == 'POST':
-        serializer    = UserRegisterSerializer
+        try:
+            user = User.objects.get(phone_number=phone_number)
+            print('User===',user)
+        except User.DoesNotExist:
+            return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = UserRegistrationSerializer(user, data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            
+            address_data        = serializer.validated_data['address']
+            address             = Address.objects.create(**address_data)
+
+            user.username       = serializer.validated_data.get('username')
+            user.username       = serializer.validated_data.get('username')
+            user.email          = serializer.validated_data.get('email')
+            user.first_name     = serializer.validated_data.get('first_name')
+            user.last_name      = serializer.validated_data.get('last_name')
+            user.address        = address
+            user.save()
+            print(serializer.validated_data.get('username'))
+            print('username===',serializer.validated_data.get('username'))
+
+            if serializer.validated_data['receiver']['is_receiver']:
+                receiver_data   = serializer.validated_data['receiver']
+                Receiver.objects.create(user=user, **receiver_data)
+            elif serializer.validated_data['donor'] is not None:
+                donor_data      = serializer.validated_data['donor']
+                donor=Donor.objects.create(donor=user, 
+                                     weight=donor_data['weight'],
+                                     dob=donor_data['dob'],
+                                     blood_group=donor_data['blood_group']
+                                     )
             context = {
                 "status": "success",
                 "errorInfo": None,
@@ -80,13 +112,15 @@ def user_register(request):
                 }
             }
             return Response(context, status=status.HTTP_201_CREATED)
-        context = {
+        else:
+            context = {
                 "status": "failure",
                 "errorInfo": "Something wrong please",
-                "result": None
+                "result": serializer.errors
             }
-        return Response(context, status=status.HTTP_400_BAD_REQUEST)
-            
+            print(serializer.errors)  # Print serializer errors for debugging
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                 
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])

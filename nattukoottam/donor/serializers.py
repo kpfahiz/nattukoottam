@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import User, Address, Donor
-from patient.models import Reciever
+from patient.models import Receiver
 
 class UserSignUpSerializer(serializers.ModelSerializer):
     class Meta:
@@ -15,51 +15,31 @@ class UserSignUpSerializer(serializers.ModelSerializer):
         user.set_password(validated_data['password'])
         user.save()
         return user
-
+    
 class AddressSerializer(serializers.ModelSerializer):
     class Meta:
-        model   = Address
-        fields  = '__all__'
+        model = Address
+        fields = '__all__'
 
 class DonorSerializer(serializers.ModelSerializer):
     class Meta:
-        model   = Donor
-        fields  = ['wieght','dob','blood_group']
+        model = Donor
+        fields = ['weight', 'dob', 'status', 'blood_group']
 
-class RecieverSerializer(serializers.ModelSerializer):
+class ReceiverSerializer(serializers.ModelSerializer):
     class Meta:
-        model   = Reciever
-        fields  = '__all__'
-class UserRegisterSerializer(serializers.ModelSerializer):
+        model = Receiver
+        fields = ['is_receiver']
+
+
+class UserRegistrationSerializer(serializers.ModelSerializer):
 
     address     = AddressSerializer()
-    donor       = DonorSerializer()
-    reciever    = RecieverSerializer()
+    donor       = DonorSerializer(required=False)
+    receiver    = ReceiverSerializer(write_only=True)
     class Meta:
         model   = User
-        fields  = ['username','email','first_name','last_name','address','donor','reciever']
-
-        def create(self, validated_data):
-            address_data    = validated_data.pop('address')
-            if validated_data['is_donor']:
-                validated_data.pop('is_donor')
-                donor_data      = validated_data.pop('donor')
-                user            = User.objects.create(**validated_data)
-                Donor.objects.create(donor=user, **donor_data)
-            else:
-                validated_data.pop('is_donor')
-                reciever_data   = validated_data.pop('reciever')
-                user            = User.objects.create(**validated_data)
-                Reciever.objects.create(user=user, **reciever_data)
-            return user
-            
-
-
-
-
-            user = User.objects.create(**validated_data)
-            Address.objects.create(user=user, **address_data)
-            return user
+        fields  = ['phone_number','username','email','first_name','last_name','address','donor','receiver']
         
 
             
