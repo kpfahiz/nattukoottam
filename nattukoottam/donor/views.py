@@ -7,7 +7,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 
-from .serializers import UserSignUpSerializer
+from .serializers import UserSignUpSerializer, UserRegisterSerializer
 from .models import User
 
 @api_view(['POST'])
@@ -69,23 +69,24 @@ def user_login(request):
 @api_view(['POST'])
 def user_register(request):
     if request.method == 'POST':
-        first_name = request.data.get('first_name')
-        last_name = request.data.get('last_name')
-        address_1 = request.data.get('address_1')
-        address_2 = request.data.get('address_2')
-        town = request.data.get('town')
-        district = request.data.get('district')
-        state = request.data.get('state')
-        pinecode = request.data.get('pincode')
-        if request.data.get('is_donor'):
-            place = request.data.get('place')
-            blood_group = request.data.get('blood_group')
-            phone_number = request.data.get('phone_number')
-            weight = request.data.get('weight')
-            dob = request.data.get('dob')
-            date_last_donation = request.get.data('date_last_donation')
+        serializer    = UserRegisterSerializer
+        if serializer.is_valid():
+            serializer.save()
+            context = {
+                "status": "success",
+                "errorInfo": None,
+                "result": {
+                "data":  serializer.data
+                }
+            }
+            return Response(context, status=status.HTTP_201_CREATED)
+        context = {
+                "status": "failure",
+                "errorInfo": "Something wrong please",
+                "result": None
+            }
+        return Response(context, status=status.HTTP_400_BAD_REQUEST)
             
-
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])

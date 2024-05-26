@@ -2,10 +2,10 @@ from django.db import models
 
 class Reciever(models.Model):
     user                    = models.ForeignKey('donor.User', on_delete=models.CASCADE)
-    address                 = models.ForeignKey('donor.Address', on_delete=models.CASCADE)
 
     def __str__(self) -> str:
         return self.user__username
+    
 class Request(models.Model):
     blood_gp_choice = (
         ('A+','A+'),

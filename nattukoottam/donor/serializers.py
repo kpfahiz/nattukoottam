@@ -15,27 +15,52 @@ class UserSignUpSerializer(serializers.ModelSerializer):
         user.set_password(validated_data['password'])
         user.save()
         return user
-class UserRegisterSerializer(serializers.ModelSerializer):
+
+class AddressSerializer(serializers.ModelSerializer):
     class Meta:
-        model1 = Address
-        fields1 = ['address1','address_2','town','district','state','pincode']
+        model   = Address
+        fields  = '__all__'
 
-        model2 = Donor
-        fields2 = ['place','blood_group','phone_number','weight','dob','date_last_donation']
+class DonorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model   = Donor
+        fields  = ['wieght','dob','blood_group']
 
-        model3 = Reciever
-        fields3 = ['user']
+class RecieverSerializer(serializers.ModelSerializer):
+    class Meta:
+        model   = Reciever
+        fields  = '__all__'
+class UserRegisterSerializer(serializers.ModelSerializer):
+
+    address     = AddressSerializer()
+    donor       = DonorSerializer()
+    reciever    = RecieverSerializer()
+    class Meta:
+        model   = User
+        fields  = ['username','email','first_name','last_name','address','donor','reciever']
+
+        def create(self, validated_data):
+            address_data    = validated_data.pop('address')
+            if validated_data['is_donor']:
+                validated_data.pop('is_donor')
+                donor_data      = validated_data.pop('donor')
+                user            = User.objects.create(**validated_data)
+                Donor.objects.create(donor=user, **donor_data)
+            else:
+                validated_data.pop('is_donor')
+                reciever_data   = validated_data.pop('reciever')
+                user            = User.objects.create(**validated_data)
+                Reciever.objects.create(user=user, **reciever_data)
+            return user
+            
+
+
+
+
+            user = User.objects.create(**validated_data)
+            Address.objects.create(user=user, **address_data)
+            return user
         
-
-        def create(self, validation_data):
-            Address(
-                address1 = validation_data['address1'],
-                address_2 = validation_data['address_2'],
-                town = validation_data['town'],
-                district = validation_data['district'],
-                state = validation_data['state'],
-                pincode = validation_data['pincode']
-            )
 
             
 

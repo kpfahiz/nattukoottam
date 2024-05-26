@@ -19,7 +19,7 @@ from django.urls import path
 from django.conf.urls.static import static
 from django.conf import settings
 
-from donor.views import index, user_login, user_signup, user_logout
+from donor.views import index, user_login, user_signup, user_logout, user_register
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -27,5 +27,6 @@ urlpatterns = [
     path('signup/', user_signup, name='register'),
     path('login/', user_login, name='login'),
     path('logout/', user_logout, name='logout'),
+    path('user_registration', user_register, name='user register')
 
 ] + static(settings.MEDIA_URL, document_root= settings.MEDIA_ROOT)
