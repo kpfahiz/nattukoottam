@@ -42,7 +42,17 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         fields  = ['phone_number','username','email','first_name','last_name','address','donor','receiver']
         
 
-            
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['username', 'first_name', 'last_name', 'email']
+
+class DonorIndexSerializer(serializers.ModelSerializer):
+    donor = UserSerializer()
+
+    class Meta:
+        model = Donor
+        fields = ['donor', 'weight', 'dob', 'status', 'blood_group']            
 
 
         

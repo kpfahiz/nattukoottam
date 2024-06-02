@@ -8,9 +8,13 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
-from .serializers import UserSignUpSerializer, UserRegistrationSerializer
+from .serializers import UserSignUpSerializer, UserRegistrationSerializer, DonorIndexSerializer
+from patient.serializers import ReceiverIndexSerializer
+from news.serializers import NewsSerializer
 from .models import User, Donor, Address
-from patient.models import Receiver
+from patient.models import Receiver, Donation
+from news.models import News
+from ads.models import Ads
 
 @api_view(['POST'])
 def user_signup(request):
@@ -74,7 +78,6 @@ class UserUpdateAPIView(APIView):
 
         try:
             user = User.objects.get(phone_number=phone_number)
-            print('User===',user)
         except User.DoesNotExist:
             return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
 
@@ -91,8 +94,6 @@ class UserUpdateAPIView(APIView):
             user.last_name      = serializer.validated_data.get('last_name')
             user.address        = address
             user.save()
-            print(serializer.validated_data.get('username'))
-            print('username===',serializer.validated_data.get('username'))
 
             if serializer.validated_data['receiver']['is_receiver']:
                 receiver_data   = serializer.validated_data['receiver']
@@ -130,7 +131,7 @@ def user_logout(request):
             # Delete the user's token to logout
             request.user.auth_token.delete()
             contex = {
-            "status": "failure",
+            "status": "Success",
             "errorInfo": None,
             "result": {
                     'message': 'Successfully logged out.'
@@ -144,6 +145,48 @@ def user_logout(request):
             "result": None
             }
             return Response(contex, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class IndexApiView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self,request):
+        try:
+            donor = Donor.objects.get(donor=request.user)
+            donation_cnt = Donation.objects.count()
+            news =News.objects.all().order_by('-date')[0]
+            print(news)
+            print(donation_cnt)
+            news_serializer = NewsSerializer(news)
+            if donor:
+                donor_serializer = DonorIndexSerializer(donor)
+                contex =  {
+                    "status": "success",
+                    "errorInfo": None,
+                    "result": {
+                        "user_date":  donor_serializer.data,
+                        'news': news_serializer.data,
+                        'total_donantion_cnt': donation_cnt
+                    }
+                }
+            else:
+                receiver = Receiver.objects.get(user=request.user)
+                serializer = ReceiverIndexSerializer(receiver)
+                contex =  {
+                    "status": "success",
+                    "errorInfo": None,
+                    "result": {
+                        "user_date":  donor_serializer.data,
+                        'news': news_serializer,
+                        'total_donantion_cnt': donation_cnt
+                    }
+                }
+                
+        except User.DoesNotExist:
+            contex =  {
+                "status": "failure",
+                "errorInfo": "User not found",
+                "result": None
+            }
+            return Response(contex, status=status.HTTP_404_NOT_FOUND)
+        return Response(contex, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
-def index(request):
-     return HttpResponse("Http request is: "+request.method)  

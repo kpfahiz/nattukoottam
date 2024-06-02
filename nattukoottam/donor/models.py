@@ -50,7 +50,7 @@ class Donor(models.Model):
     blood_group             = models.CharField(max_length=3, choices=blood_gp_choice)
     
     def __str__(self) -> str:
-        return self.donor__user__username
+        return self.donor.username
 
 class Point(models.Model):
     point_type_choice       = (
@@ -65,7 +65,7 @@ class Point(models.Model):
 
 
     def __str__(self) -> str:
-        return f'{self.donor__donor__username}_{self.point_date}'
+        return f'{self.donor.username}_{self.point_date}'
     
 class Certificate(models.Model):
     name                    = models.CharField(max_length=100)
@@ -80,4 +80,4 @@ class BloodUnit(models.Model):
     Donor                   = models.ForeignKey(Donor, default=1, on_delete=models.CASCADE )
 
     def __str__(self) -> str:
-        return 'Blood Unit '+self.donor__user__username
+        return f'Blood Unit {self.Donor.donor.username}'
