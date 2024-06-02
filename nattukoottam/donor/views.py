@@ -163,7 +163,8 @@ class IndexApiView(APIView):
                     "status": "success",
                     "errorInfo": None,
                     "result": {
-                        "user_date":  donor_serializer.data,
+                        "is_receiver": False,
+                        "user_data":  donor_serializer.data,
                         'news': news_serializer.data,
                         'total_donantion_cnt': donation_cnt
                     }
@@ -175,6 +176,7 @@ class IndexApiView(APIView):
                     "status": "success",
                     "errorInfo": None,
                     "result": {
+                        "is_receiver": True,
                         "user_date":  donor_serializer.data,
                         'news': news_serializer,
                         'total_donantion_cnt': donation_cnt
