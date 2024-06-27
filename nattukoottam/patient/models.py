@@ -3,6 +3,7 @@ from django.db import models
 class Receiver(models.Model):
     user                    = models.ForeignKey('donor.User', on_delete=models.CASCADE)
     is_receiver             = models.BooleanField(default=False)
+    fcm_token               = models.CharField(max_length=255, null=True, blank=True)
 
     def __str__(self) -> str:
         return self.user.username
@@ -28,6 +29,7 @@ class Request(models.Model):
     patient_address         = models.ForeignKey('donor.address', on_delete=models.CASCADE)
     blood_unit              = models.ForeignKey('donor.bloodunit', on_delete=models.CASCADE)
 
+
     def __str__(self) -> str:
         return self.request_raised_by.user.username
     
@@ -51,3 +53,12 @@ class Donation(models.Model):
     
     def __str__(self) -> str:
         return f'Doantion {self.blood_request.request_raised_by.user.username}'
+    
+
+class Notification(models.Model):
+    donor = models.ForeignKey('donor.donor', on_delete=models.CASCADE)
+    blood_request = models.ForeignKey(Request, on_delete=models.CASCADE)
+    date_sent = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'Notification to {self.donor.user.username} for request {self.blood_request.id}'

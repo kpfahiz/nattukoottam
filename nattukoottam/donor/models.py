@@ -1,6 +1,8 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.core.validators import RegexValidator
+from datetime import timedelta
+from django.utils import timezone
 
 class Address(models.Model):
     address                 = models.CharField(max_length=250)
@@ -48,6 +50,19 @@ class Donor(models.Model):
     dob                     = models.DateField()
     status                  = models.CharField(max_length=3, choices=status_choice, default='AV')
     blood_group             = models.CharField(max_length=3, choices=blood_gp_choice)
+    last_donated_date       = models.DateField(null=True, blank=True)
+    points                  = models.IntegerField(default=0)
+    fcm_token               = models.CharField(max_length=255, null=True, blank=True)
+
+    def can_donate(self)->bool:
+        if self.last_donated_date:
+            return timezone.now().date() > self.last_donated_date + timedelta(days=90)
+        return True
+
+    def donate(self, points):
+        self.last_donated_date = timezone.now().date()
+        self.points += points
+        self.save()
     
     def __str__(self) -> str:
         return self.donor.username
@@ -77,7 +92,11 @@ class Certificate(models.Model):
         return self.name  
     
 class BloodUnit(models.Model):
-    Donor                   = models.ForeignKey(Donor, default=1, on_delete=models.CASCADE )
+    donor                   = models.ForeignKey(Donor, on_delete=models.CASCADE)
+    blood_request           = models.ForeignKey('patient.request', on_delete=models.CASCADE)
+    units                   = models.IntegerField()
+    date_donated            = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
-        return f'Blood Unit {self.Donor.donor.username}'
+        return f'Blood Unit  - Donoted by {self.Donor.donor.username} and Requested by {self.blood_request.request_raised_by.user.username}'
+    

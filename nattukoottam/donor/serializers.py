@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, Address, Donor
+from .models import User, Address, Donor, BloodUnit
 from patient.models import Receiver
 
 class UserSignUpSerializer(serializers.ModelSerializer):
@@ -54,5 +54,7 @@ class DonorIndexSerializer(serializers.ModelSerializer):
         model = Donor
         fields = ['donor', 'weight', 'dob', 'status', 'blood_group']            
 
-
-        
+class BloodUnitSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BloodUnit
+        fields = ['id', 'donor', 'blood_request', 'units', 'date_donated']
