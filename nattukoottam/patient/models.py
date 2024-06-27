@@ -28,6 +28,7 @@ class Request(models.Model):
     is_closed               = models.BooleanField(default=False)
     patient_address         = models.ForeignKey('donor.address', on_delete=models.CASCADE)
     blood_unit              = models.ForeignKey('donor.bloodunit', on_delete=models.CASCADE)
+    fulfilled               = models.BooleanField(default=False)
 
 
     def __str__(self) -> str:
