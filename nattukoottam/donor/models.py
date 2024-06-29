@@ -1,8 +1,24 @@
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 from django.core.validators import RegexValidator
 from datetime import timedelta
 from django.utils import timezone
+from django.contrib.auth.models import PermissionsMixin
+
+class UserManager(BaseUserManager):
+    def create_user(self, phone_number, password=None, **extra_fields):
+        if not phone_number:
+            raise ValueError('The Phone Number field must be set')
+        user = self.model(phone_number=phone_number, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, phone_number, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+
+        return self.create_user(phone_number, password, **extra_fields)
 
 class Address(models.Model):
     address                 = models.CharField(max_length=250)
@@ -20,9 +36,15 @@ class User(AbstractUser):
     phone_regex             = RegexValidator(regex=r'^\+?1?\d{9,10}$', message="Phone number must be entered in the format: '+999999999'. Up to 10 digits allowed.")
     phone_number            = models.CharField(validators=[phone_regex], max_length=17, blank=True, unique=True) # Validators should be a list
     address                 = models.ForeignKey(Address, on_delete=models.CASCADE, related_name='users', null=True)
+    username                = models.CharField(max_length=150, blank=True, null=True, unique=False)
     
 
-    def __str__(self)->str:
+    objects = UserManager()
+
+    USERNAME_FIELD = 'phone_number'
+    REQUIRED_FIELDS = []
+
+    def __str__(self):
         return self.phone_number
     
 
