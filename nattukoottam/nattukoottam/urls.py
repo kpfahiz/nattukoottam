@@ -19,7 +19,7 @@ from django.urls import path
 from django.conf.urls.static import static
 from django.conf import settings
 
-from donor.views import IndexApiView, user_login, user_signup, user_logout, UserUpdateAPIView #user_register,
+from donor.views import IndexApiView, user_login, user_signup, user_logout, UserUpdateAPIView, generate_certificate_view #user_register,
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -29,5 +29,5 @@ urlpatterns = [
     path('logout/', user_logout, name='logout'),
     # path('user_registration/', user_register, name='userregister'),
     path('user_registration/', UserUpdateAPIView.as_view(), name='update'),
-
+    path('generate-certificate/', generate_certificate_view, name='generate-certificate'),
 ] + static(settings.MEDIA_URL, document_root= settings.MEDIA_ROOT)

@@ -5,6 +5,7 @@ from .serializers import BloodRequestSerializer, DonationSerializer
 from datetime import timedelta
 from django.utils import timezone
 import requests
+from certificate_generate import add_text_to_certificate
 
 class BloodRequestCreateView(generics.CreateAPIView):
     serializer_class = BloodRequestSerializer
@@ -98,4 +99,8 @@ class ConfirmDonationView(generics.UpdateAPIView):
 
     def generate_certificate(self, donation):
         # Placeholder for actual certificate generation logic
-        pass
+        donor_name = donation.donor.user.user_name 
+        blood_group = donation.donor.blood_group
+        
+
+        add_text_to_certificate(donor_name,)

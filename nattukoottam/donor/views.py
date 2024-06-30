@@ -1,4 +1,4 @@
-from django.shortcuts import HttpResponse
+from django.shortcuts import HttpResponse,render
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
@@ -15,6 +15,11 @@ from .models import User, Donor, Address
 from patient.models import Receiver, Donation
 from news.models import News
 from ads.models import Ads
+
+from django.http import JsonResponse
+from patient.certificate_generate import add_text_to_certificate
+from django.views.decorators.csrf import csrf_exempt
+import json,os
 
 @api_view(['POST'])
 def user_signup(request):
@@ -191,4 +196,24 @@ class IndexApiView(APIView):
             }
             return Response(contex, status=status.HTTP_404_NOT_FOUND)
         return Response(contex, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
+
+
+@csrf_exempt
+def generate_certificate_view(request):
+    if request.method == 'POST':
+        data = json.loads(request.body.decode('utf-8'))
+        name = data.get('name')
+        blood_group = data.get('blood_group')
+        donation_date = data.get('donation_date')
+        print(name, blood_group, donation_date)
+
+        if not all([name, blood_group, donation_date]):
+            return JsonResponse({'error': 'Missing required fields'}, status=400)
+
+        try:
+            certificate_path = add_text_to_certificate(name, blood_group, donation_date)
+            return JsonResponse({'certificate_url': request.build_absolute_uri(f"/media/{os.path.basename(certificate_path)}")})
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
