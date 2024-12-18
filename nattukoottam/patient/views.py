@@ -47,6 +47,21 @@ class DonorAcceptRequestView(generics.UpdateAPIView):
     queryset = Donation.objects.all()
     serializer_class = DonationSerializer
 
+    def send_push_notification(self, token, blood_request):
+        url = "https://fcm.googleapis.com/fcm/send"
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': 'key=YOUR_SERVER_KEY'  # Replace with your Firebase server key
+        }
+        data = {
+            "to": token,
+            "notification": {
+                "title": "Donation Accepted",
+                "body": f"Your request for {blood_request.blood_type} blood type has been accepted by a donor."
+            }
+        }
+        requests.post(url, headers=headers, json=data)
+
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
         instance.approved_by_receiver = True
@@ -63,20 +78,6 @@ class DonorAcceptRequestView(generics.UpdateAPIView):
 
         return Response({"status": "Donation accepted and added to blood unit database"}, status=status.HTTP_200_OK)
 
-    def send_push_notification(self, token, blood_request):
-        url = "https://fcm.googleapis.com/fcm/send"
-        headers = {
-            'Content-Type': 'application/json',
-            'Authorization': 'key=YOUR_SERVER_KEY'  # Replace with your Firebase server key
-        }
-        data = {
-            "to": token,
-            "notification": {
-                "title": "Donation Accepted",
-                "body": f"Your request for {blood_request.blood_type} blood type has been accepted by a donor."
-            }
-        }
-        requests.post(url, headers=headers, json=data)
 
 class ConfirmDonationView(generics.UpdateAPIView):
     queryset = Donation.objects.all()
